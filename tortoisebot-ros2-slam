@@ -1,0 +1,54 @@
+# Start from ROS base image
+FROM ros:galactic-ros-base
+
+# Make a catkin workspace
+WORKDIR /
+RUN mkdir -p /ros2_ws/src
+WORKDIR /ros2_ws/src
+
+SHELL [ "/bin/bash" , "-c" ]
+# Install necessary dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    build-essential
+
+#COPY ./keyboard /etc/default/keyboard
+
+RUN apt-get update && apt-get install -y \
+  gazebo11 \
+  ros-galactic-gazebo-ros-pkgs \
+  ros-galactic-joint-state-publisher \
+  ros-galactic-robot-state-publisher \
+  ros-galactic-cartographer \
+  ros-galactic-cartographer-ros \
+  --no-install-recommends \
+  ros-galactic-gazebo-plugins \
+  ros-galactic-teleop-twist-keyboard  \
+  ros-galactic-teleop-twist-joy \
+  ros-galactic-xacro \ 
+  ros-galactic-nav2* \
+  ros-galactic-urdf \
+  ros-galactic-v4l2-camera \
+  ros-galactic-robot-localization \
+  ros-galactic-tf2-ros \
+  ros-galactic-tf2-tools \
+  ros-galactic-rviz2  \
+  ros-galactic-gazebo-msgs \
+  ros-galactic-joint-trajectory-controller \
+  && rm -rf /var/lib/apt/lists/*
+ 
+# Create a volume for ROS packages
+COPY ./tortoisebot_slam /ros2_ws/src/tortoisebot_slam
+COPY ./tortoisebot_navigation /ros2_ws/src/tortoisebot_navigation
+COPY ./tortoisebot_description /ros2_ws/src/tortoisebot_description
+
+# Build the Catkin workspace
+RUN source /opt/ros/galactic/setup.bash \
+    && cd /ros2_ws \
+    && colcon build
+
+# Ensure the workspace is sourced
+RUN echo "source /ros2_ws/install/setup.bash" >> ~/.bashrc
+
+# Set the entry point to start the ROS launch file
+ENTRYPOINT ["/bin/bash", "-c", "source /ros2_ws/install/setup.bash && sleep 10 && ros2 launch tortoisebot_slam cartographer.launch.py use_sim_time:=True"]
