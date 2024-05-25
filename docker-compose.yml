@@ -1,9 +1,8 @@
-version: "3.7"
 
 services:
 
   tortoisebot-ros2-gazebo:
-    # image: tortoisebot-ros2-gazebo
+    image: combuster54/tortoisebot:galactic-gazebo
     container_name: tortoisebot-ros2-gazebo
     build: 
       context: .
@@ -17,7 +16,7 @@ services:
     restart: "always" 
 
   tortoisebot-ros2-slam:
-    # image: tortoisebot-ros2-slam
+    image: combuster54/tortoisebot:slam-gazebo
     container_name: tortoisebot-ros2-slam
     build: 
       context: .
